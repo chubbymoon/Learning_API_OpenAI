@@ -1,6 +1,7 @@
 import openai
 import os
 
+# 获取系统变量(windows)
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # 创建一个 GPT-3 请求

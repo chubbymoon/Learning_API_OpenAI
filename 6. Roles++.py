@@ -8,17 +8,20 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 """1. 定义角色库"""
 roles = {"医生": """请以一位专业医生的身份回复""",
 
-         "程序员(python)": """请以一位专业程序员的身份回复""",
+         "代码程序员(python)": """请以一位专业程序员的身份回复""",
 
          "小红书文案助理": """你是小红书文案 AI 私人助理，可以帮助用户快速生成吸引人的小红书文案。""",
 
          "陪聊": """你是 Al 智能聊天机器人，你很能聊，不管问什么，你都可以给予对方有趣而准确的回复""",
+
+         "其他": "",
          }
 
 
 """2. 设定需求"""
 # 模拟用户的提示语
 user_prompt = "我感冒已经超过7天了，你能帮我分析一下原因吗？"
+# user_prompt = "使用 Python 匿名函数将字典里的所有键输出"
 print(f"user: {user_prompt}")
 
 
@@ -27,10 +30,10 @@ print(f"user: {user_prompt}")
 def get_ability(role):
     """通过不同角色的指定输出相关的提示词, 用于增强 GPT 的回复能力
 
-    通过指定不同角色或能力来输出相关的指导词, 用于应对不同的场景。支持的角色和能力有：医生、程序员、小红书文案助理、陪聊。
+    通过指定不同角色或能力来输出相关的指导词, 用于应对不同的场景。
 
-    :param role:
-    :return:
+    :param role: 指定某种角色或能力
+    :return: 输出相关角色的指导词
     """
     if role in roles:
         prompt = roles[role]
@@ -57,7 +60,7 @@ function_repository = {
 """6. 创建功能函数的 JSON Schema"""
 # 5.与 6. 的顺序不能颠倒, 函数的 JSON Schema 与定义的功能函数重名
 get_ability = {"name": "get_ability",
-               "description": f"通过指定不同角色或能力来输出相关的指导词, 用于应对不同的场景。支持的角色和能力有：{list(map(lambda x: x, roles.keys()))}。",
+               "description": f"通过指定不同角色或能力来输出相关的指导词, 用于应对不同的场景。支持的角色或能力有：{list(map(lambda x: x, roles.keys()))}。",
                "parameters": {"type": "object",
                               "properties": {"role": {"type": "string",
                                                       "description": "用于指定某种角色或能力"},
@@ -73,7 +76,7 @@ functions = [get_ability]
 
 """8. 创建上下文列表(messages)"""
 messages = [
-    {"role": "system", "content": f"你有着不同的身份和不同的能力，请根据他人的需求，选择合适的能力和身份来应对。"},
+    {"role": "system", "content": f"你有着不同的身份和能力{list(map(lambda x: x, roles.keys()))}，请根据他人的需求，选择合适的能力和身份来应对。"},
     {"role": "user", "content": f"{user_prompt}"},
 
     # 不同的提问测试
