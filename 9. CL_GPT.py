@@ -9,8 +9,8 @@ from logger import logger
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
-class Chat:
-    """ Chat 类用于与 OpenAI GPT-3 模型进行聊天对话，并可选地调用外部功能函数。
+class CL_GPT:
+    """ CL_GPT 类用于与 OpenAI GPT-3 模型进行聊天对话, 不过是在命令行中使用它，而且它可以调用外部功能函数。
 
     输入 STOP 即可结束聊天
 
@@ -255,5 +255,5 @@ class Chat:
 
 
 if __name__ == '__main__':
-    chat = Chat(stream=True)
+    chat = CL_GPT(stream=True)
     chat.run()
