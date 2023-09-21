@@ -104,6 +104,34 @@ except Exception as e:
     sys.exit()
     pass
 
+# print(f"response: {response}")
+"""  函数调用 response 输出示例:
+response: {
+  "id": "chatcmpl-80ryKEMonPeyUXid45ROEZnIDOkWJ",
+  "object": "chat.completion",
+  "created": 1695218160,
+  "model": "gpt-3.5-turbo-0613",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "function_call": {
+          "name": "calculate_total_age_from_split_json",
+          "arguments": "{\n  \"input_json\": \"{\\\"columns\\\":[\\\"Name\\\",\\\"Age\\\",\\\"Salary\\\",\\\"IsMarried\\\"],\\\"index\\\":[0,1,2],\\\"data\\\":[[\\\"Alice\\\",25,50000.0,true],[\\\"Bob\\\",30,100000.5,false],[\\\"Charlie\\\",35,150000.75,true]]}\"\n}"
+        }
+      },
+      "finish_reason": "function_call"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 225,
+    "completion_tokens": 82,
+    "total_tokens": 307
+  }
+}
+"""
 
 """10. 保存 GPT 返回的关键信息(需要调用的函数和相关参数)"""
 # TODO 不能保证 GPT 一定会调用函数, 需要异常处理

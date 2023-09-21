@@ -8,7 +8,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 class AutoFunctionGenerator:
-    def __init__(self, functions_list, max_attempts=1):
+    def __init__(self, functions_list, max_attempts=2):
         self.functions_list = functions_list
         self.max_attempts = max_attempts
 
@@ -73,11 +73,11 @@ class AutoFunctionGenerator:
 
     def _call_openai_api(self, messages):
         # 请根据您的实际情况修改此处的 API 调用
-        return openai.ChatCompletion.create(
-            # model="gpt-3.5-turbo-16k-0613",
-            model="gpt-3.5-turbo-0613",
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-16k-0613",
             messages=messages,
         )
+        return response
 
     def auto_generate(self):
         # 记录尝试次数
@@ -286,8 +286,6 @@ if __name__ == '__main__' and 0:
     
     """
 
-#     TODO 1.增加调试模块 (了解过程), 2.增加等待提示(避免空白等待), 3.增加 "流式输出" 或 整体输出 的选择
-
 # ChatConversation 测试_2: 不带入外部函数仓库
 if __name__ == '__main__':
     #  # 提供数据
@@ -370,3 +368,5 @@ if __name__ == '__main__':
     """ result 输出示例
     在数据集 input_json 中，所有人年龄的总和为 90。
     """
+
+# TODO 1.增加调试模块 (了解过程), 2.增加等待提示(避免空白等待), 3.增加 "流式输出" 或 整体输出 的选择
