@@ -31,64 +31,60 @@ response = openai.ChatCompletion.create(
 
 # 处理 "流式输出" 或 整体输出
 if type(response) == types.GeneratorType:
-    try:
-        for i in response:
-            content = i.choices[0].delta.get('content')
-            # "流式输出" 最后一项 "content" 为空
-            if content:
-                print(content, end="")
+    for i in response:
+        content = i.choices[0].delta.get('content')
+        # "流式输出" 最后一项 "content" 为空
+        if content:
+            print(content, end="")
 
-            # print(i)
-            ''' 流式输出 示例
+        # print(i)
+        ''' 流式输出 示例
+        {
+          "id": "chatcmpl-80rChyjKMMjf0unQDfwawohbPmwE9",
+          "object": "chat.completion.chunk",
+          "created": 1695215207,
+          "model": "gpt-3.5-turbo-0613",
+          "choices": [
             {
-              "id": "chatcmpl-80rChyjKMMjf0unQDfwawohbPmwE9",
-              "object": "chat.completion.chunk",
-              "created": 1695215207,
-              "model": "gpt-3.5-turbo-0613",
-              "choices": [
-                {
-                  "index": 0,
-                  "delta": {
-                    "role": "assistant",
-                    "content": ""
-                  },
-                  "finish_reason": null
-                }
-              ]
+              "index": 0,
+              "delta": {
+                "role": "assistant",
+                "content": ""
+              },
+              "finish_reason": null
             }
+          ]
+        }
+        {
+          "id": "chatcmpl-80rChyjKMMjf0unQDfwawohbPmwE9",
+          "object": "chat.completion.chunk",
+          "created": 1695215207,
+          "model": "gpt-3.5-turbo-0613",
+          "choices": [
             {
-              "id": "chatcmpl-80rChyjKMMjf0unQDfwawohbPmwE9",
-              "object": "chat.completion.chunk",
-              "created": 1695215207,
-              "model": "gpt-3.5-turbo-0613",
-              "choices": [
-                {
-                  "index": 0,
-                  "delta": {
-                    "content": "\u8fd9"
-                  },
-                  "finish_reason": null
-                }
-              ]
+              "index": 0,
+              "delta": {
+                "content": "\u8fd9"
+              },
+              "finish_reason": null
             }
-            ...
+          ]
+        }
+        ...
+        {
+          "id": "chatcmpl-80rChyjKMMjf0unQDfwawohbPmwE9",
+          "object": "chat.completion.chunk",
+          "created": 1695215207,
+          "model": "gpt-3.5-turbo-0613",
+          "choices": [
             {
-              "id": "chatcmpl-80rChyjKMMjf0unQDfwawohbPmwE9",
-              "object": "chat.completion.chunk",
-              "created": 1695215207,
-              "model": "gpt-3.5-turbo-0613",
-              "choices": [
-                {
-                  "index": 0,
-                  "delta": {},
-                  "finish_reason": "stop"
-                }
-              ]
+              "index": 0,
+              "delta": {},
+              "finish_reason": "stop"
             }
-            '''
-
-    except Exception as e:
-        print(e)
+          ]
+        }
+        '''
 else:
     print(response.choices[0].message['content'])
 

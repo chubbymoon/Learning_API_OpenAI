@@ -1,5 +1,7 @@
 import json
 import sys
+import types
+
 import pandas as pd
 import openai
 import os
@@ -24,8 +26,9 @@ print(f"df_complex_json: {df_complex_json}")
 # 让大模型计算这个数据集中所有人的年龄总和。
 print(f"user: 请在数据集 input_json: df_complex_json 上执行计算所有人年龄总和函数")
 
-
 """3. 定义功能函数"""
+
+
 # 编写计算年龄总和的函数
 def calculate_total_age_from_split_json(input_json):
     """
@@ -61,7 +64,6 @@ function_repository = {
     "calculate_total_age_from_split_json": calculate_total_age_from_split_json,
 }
 
-
 """6. 创建功能函数的 JSON Schema"""
 # 5.与 6. 的顺序不能颠倒, 函数的 JSON Schema 与定义的功能函数重名
 calculate_total_age_from_split_json = {"name": "calculate_total_age_from_split_json",
@@ -74,11 +76,9 @@ calculate_total_age_from_split_json = {"name": "calculate_total_age_from_split_j
                                                       },
                                        }
 
-
 """7. 创建函数列表"""
 # 添加到 functions 列表中，在对话过程中作为函数库传递给 function 参数
 functions = [calculate_total_age_from_split_json]
-
 
 """8. 创建上下文列表(messages)"""
 messages = [
@@ -89,7 +89,6 @@ messages = [
     # {"role": "user", "content": "请分析给定的数据"},    # 不会调用函数
 ]
 
-
 """9. 将用户提问传入 GPT 模型，让其自动选择函数和相关参数"""
 try:
     response = openai.ChatCompletion.create(
@@ -97,6 +96,7 @@ try:
         messages=messages,
         functions=functions,
         function_call="auto",
+        # stream=True
     )
 except Exception as e:
     print(e)
@@ -104,14 +104,100 @@ except Exception as e:
     sys.exit()
     pass
 
-# print(f"response: {response}")
-"""  函数调用 response 输出示例:
-response: {
-  "id": "chatcmpl-80ryKEMonPeyUXid45ROEZnIDOkWJ",
-  "object": "chat.completion",
-  "created": 1695218160,
-  "model": "gpt-3.5-turbo-0613",
-  "choices": [
+# 查看 "流式输出" 或 整体输出
+if type(response) == types.GeneratorType:
+    for i in response:
+        cell_function_call = i.choices[0].delta.get('function_call')
+        # "流式输出" 最后一项 "content" 为空
+        if cell_function_call:
+            print(cell_function_call, end="")
+
+        # print(i)
+        """函数调用 流式输出示例:
+        {
+          "id": "chatcmpl-81nY7kRouuRLLJzI0MievSXe9bDqf",
+          "object": "chat.completion.chunk",
+          "created": 1695439487,
+          "model": "gpt-3.5-turbo-0613",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "role": "assistant",
+                "content": null,
+                "function_call": {
+                  "name": "calculate_total_age_from_split_json",
+                  "arguments": ""
+                }
+              },
+              "finish_reason": null
+            }
+          ]
+        }
+        {
+          "id": "chatcmpl-81nY7kRouuRLLJzI0MievSXe9bDqf",
+          "object": "chat.completion.chunk",
+          "created": 1695439487,
+          "model": "gpt-3.5-turbo-0613",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "function_call": {
+                  "arguments": "{\n"
+                }
+              },
+              "finish_reason": null
+            }
+          ]
+        }
+        ...
+        {
+          "id": "chatcmpl-81nY7kRouuRLLJzI0MievSXe9bDqf",
+          "object": "chat.completion.chunk",
+          "created": 1695439487,
+          "model": "gpt-3.5-turbo-0613",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {
+                "function_call": {
+                  "arguments": "}"
+                }
+              },
+              "finish_reason": null
+            }
+          ]
+        }
+        {
+          "id": "chatcmpl-81nY7kRouuRLLJzI0MievSXe9bDqf",
+          "object": "chat.completion.chunk",
+          "created": 1695439487,
+          "model": "gpt-3.5-turbo-0613",
+          "choices": [
+            {
+              "index": 0,
+              "delta": {},
+              "finish_reason": "function_call"
+            }
+          ]
+        }
+                
+        """
+
+    # 流式输出
+    raise Exception('流式输出 后续暂未处理')
+else:
+    # print(response.choices[0].message['content'])
+
+    # print(f"response: {response}")
+    """  函数调用 response 输出示例:
+    response: {
+    "id": "chatcmpl-80ryKEMonPeyUXid45ROEZnIDOkWJ",
+    "object": "chat.completion",
+    "created": 1695218160,
+    "model": "gpt-3.5-turbo-0613",
+    "choices": [
     {
       "index": 0,
       "message": {
@@ -124,14 +210,14 @@ response: {
       },
       "finish_reason": "function_call"
     }
-  ],
-  "usage": {
+    ],
+    "usage": {
     "prompt_tokens": 225,
     "completion_tokens": 82,
     "total_tokens": 307
-  }
-}
-"""
+    }
+    }
+    """
 
 """10. 保存 GPT 返回的关键信息(需要调用的函数和相关参数)"""
 # TODO 不能保证 GPT 一定会调用函数, 需要异常处理
@@ -167,7 +253,6 @@ messages.append(response["choices"][0]["message"])
 # 追加 function 计算结果，注意：function message 必须要输入关键词 name
 messages.append({"role": "function", "name": function_name, "content": final_response, })
 
-
 """14. 将包含本地函数运行的结果的上下文 (messages) 传入 GPT, 获取结果"""
 try:
     response = openai.ChatCompletion.create(
@@ -179,7 +264,6 @@ except Exception as e:
     print("程序已结束...")
     sys.exit()
     pass
-
 
 """15. 获取结果"""
 print("GPT: ", response.choices[0].message['content'])
