@@ -8,9 +8,16 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 class AutoFunctionGenerator:
-    def __init__(self, functions_list, max_attempts=3):
+    """ 自动生成函数描述
+
+    读取函数列表中函数的函数说明, 通过 GPT 转为 JSON Schema 的形式用于后续 GPT 的函数调用.
+    如果指定文件路径, 会将结果同时输出到指定文件中
+
+    """
+    def __init__(self, functions_list, max_attempts=2, output_path=None):
         self.functions_list = functions_list
         self.max_attempts = max_attempts
+        self.output_path = output_path
 
     def generate_function_descriptions(self):
         """生成功能描述
@@ -73,11 +80,11 @@ class AutoFunctionGenerator:
 
     def _call_openai_api(self, messages):
         # 请根据您的实际情况修改此处的 API 调用
-        return openai.ChatCompletion.create(
-            # model="gpt-3.5-turbo-16k-0613",
-            model="gpt-3.5-turbo-0613",
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-16k-0613",
             messages=messages,
         )
+        return response
 
     def auto_generate(self):
         # 记录尝试次数
@@ -85,8 +92,10 @@ class AutoFunctionGenerator:
         while attempts < self.max_attempts:
             print(" Please wait...")
             try:
-                functions = self.generate_function_descriptions()
-                return functions
+                function_describe_list = self.generate_function_descriptions()
+                # 路径存在时将结果输出到文件
+                self.output2file(function_describe_list)
+                return function_describe_list
             except Exception as e:
                 attempts += 1
                 print(f"Error occurred: {e}")
@@ -96,9 +105,37 @@ class AutoFunctionGenerator:
                 else:
                     print(" Retrying...")
 
+    def output2file(self, function_describe_list):
+        # 获取文件路径
+        file_path = self.output_path
+        if not file_path:
+            return
+
+        contents = json.dumps(function_describe_list, ensure_ascii=False)
+
+        # 写文件
+        try:
+            with open(file_path, mode='w', encoding='utf-8') as f:
+                f.write(contents)
+                pass
+        # 处理路径不存在
+        except FileNotFoundError:
+            log_file_location = os.path.dirname(file_path)
+            # 创建路径
+            if not os.path.exists(log_file_location):
+                os.makedirs(log_file_location)
+            # 再次尝试写文件
+            if not os.path.exists(file_path):
+                with open(file_path, mode='w', encoding='utf-8') as f:
+                    f.write(contents)
+                    pass
+        except Exception as e:
+            print(e)
+            raise
+
 
 # 单个功能函数测试
-if __name__ == '__main__' and 0:
+if __name__ == '__main__':
     # 示例函数
     def calculate_total_age_function(input_json):
         """
@@ -129,7 +166,7 @@ if __name__ == '__main__' and 0:
     print(function_descriptions)
 
 # 多个功能函数测试
-if __name__ == '__main__':
+if __name__ == '__main__' and 0:
     # 测试函数1
     def calculate_total_age_function(input_json):
         """
@@ -174,9 +211,11 @@ if __name__ == '__main__':
 
     # 定义函数列表
     functions_list = [calculate_total_age_function, calculate_married_count]
+    # 定义输出路径
+    output_path = os.path.join('.', 'function_describe.json')
 
     # 测试: 自动编写多个函数的 JSON Schema 效果
-    generator = AutoFunctionGenerator(functions_list)
+    generator = AutoFunctionGenerator(functions_list, output_path=output_path)
     function_descriptions = generator.auto_generate()
     print(function_descriptions)
     """ function_descriptions 输出示例(已格式化): 

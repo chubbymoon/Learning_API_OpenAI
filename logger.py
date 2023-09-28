@@ -9,8 +9,8 @@ log_file_path = ''
 
 # 配置日志输出等级
 # log_level = logging.DEBUG
-# log_level = logging.INFO
-log_level = logging.WARNING
+log_level = logging.INFO
+# log_level = logging.WARNING
 
 
 try:

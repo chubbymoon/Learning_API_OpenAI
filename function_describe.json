@@ -1,0 +1,1 @@
+[{"name": "feedback_rules", "description": "在用户要求了解<系统 规则>的内容或其中的某条规则时, 请该调用函数。\n如果用户对<系统 规则>中某条规则有疑问, 请该调用函数。", "parameters": {"type": "object", "properties": {"user_prompt": {"description": "最近一次对话的内容", "type": "string"}}, "required": ["user_prompt"]}, "returns": {"type": "string", "description": "根据用户请求提供相应的信息"}}]
